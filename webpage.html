@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Digit Drawing</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="280" height="280"></canvas>
+    <button onclick="predict()">Predict</button>
+    <p id="prediction">Prediction will appear here</p>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        // Setup drawing functionality
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            draw(e);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) draw(e);
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            ctx.beginPath();
+        });
+
+        function draw(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        // Function to convert canvas to 28x28 pixel data
+        function getImageData() {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = 28;
+            tempCanvas.height = 28;
+
+            // Scale down the original canvas to 28x28
+            tempCtx.drawImage(canvas, 0, 0, 28, 28);
+
+            // Get image data
+            const imageData = tempCtx.getImageData(0, 0, 28, 28);
+            let data = Array.from(imageData.data).filter((_, i) => (i + 1) % 4 === 0); // Only keep alpha channel
+            data = data.map(val => 255 - val); // Invert color for MNIST (white on black)
+            
+            // Normalize to [0, 1]
+            return data.map(val => val / 255);
+        }
+
+        // Predict function - this is where you would integrate with your Hugging Face model
+        function predict() {
+            const input = getImageData();
+            // Here you would send 'input' to your model or directly use it if you have the model integrated:
+            // For example, if you have a function that can predict with your Hugging Face model:
+            // const prediction = await predictWithModel(input);
+            // Instead, for this example, we'll simulate a prediction:
+            const prediction = Math.floor(Math.random() * 10); // Random prediction for demonstration
+
+            document.getElementById('prediction').textContent = `Predicted Digit: ${prediction}`;
+        }
+    </script>
+</body>
+</html>
