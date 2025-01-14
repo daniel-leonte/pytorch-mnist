@@ -67,6 +67,8 @@
             return data.map(val => val / 255);
         }
 
+        // function clear()
+
         // Predict function - this is where you would integrate with your Hugging Face model
         function predict() {
             const input = getImageData();
@@ -75,6 +77,7 @@
             // const prediction = await predictWithModel(input);
             // Instead, for this example, we'll simulate a prediction:
             const prediction = Math.floor(Math.random() * 10); // Random prediction for demonstration
+            
 
             document.getElementById('prediction').textContent = `Predicted Digit: ${prediction}`;
         }
