@@ -15,7 +15,6 @@
         async function getPrediction(blob) {
             const client = await Client.connect("danielleonte/kekius420");
             const result = await client.predict("/predict", { img: blob });
-            console.log(result)
             return result.data
         }
         window.getPrediction = getPrediction;
@@ -24,6 +23,7 @@
 <body>
     <canvas id="canvas" width="280" height="280"></canvas>
     <button onclick="predict()">Predict</button>
+    <button onclick="clearCanvas()">Clear Canvas</button>
     <p id="prediction">Prediction will appear here</p>
 
     <script>
@@ -55,13 +55,18 @@
             const y = e.clientY - rect.top;
             
             ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 8;
+            ctx.lineWidth = 10;
             ctx.line
             ctx.lineCap = 'round';
             ctx.lineTo(x, y);
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(x, y);
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
 
         // Function to convert canvas to 28x28 pixel data and then to Blob
@@ -72,31 +77,32 @@
             tempCanvas.height = 28;
 
             // Scale down the original canvas to 28x28
-            tempCtx.drawImage(canvas, 0, 0, 28, 28); // todo: bad image quality
+            ctx.filter = 'grayscale(100%) blur(1px)'; // Anti-aliasing and grayscale
+            tempCtx.drawImage(canvas, 0, 0, 280, 280, 0, 0, 28, 28);
+            ctx.filter = 'none'; // Reset filter
 
 
             // Convert to blob
             return new Promise((resolve) => {
                 tempCanvas.toBlob((blob) => {
-                    const img = new Image();
-                    const blobUrl = URL.createObjectURL(blob);
-                    img.src = blobUrl
-                    document.body.appendChild(img);
+                    // Show input image for the model
+                    // const img = new Image();
+                    // const blobUrl = URL.createObjectURL(blob);
+                    // img.src = blobUrl
+                    // document.body.appendChild(img);
 
                     resolve(blob);
                 }, 'image/jpeg');
             });
         }
 
-        // Predict function - this is where you would integrate with your Hugging Face model
+        // Predict function
         async function predict() {
+            document.getElementById('prediction').textContent = 'loading...'
             const blob = await getImageDataAsBlob();
-            // const blobUrl = URL.createObjectURL(blob);
-            console.log(blob)
 
-
-            // const prediction = await getPrediction(blob)
-            // document.getElementById('prediction').textContent = `Predicted Digit: ${prediction}`;
+            const prediction = await getPrediction(blob)
+            document.getElementById('prediction').textContent = `Predicted Digit: ${prediction}`;
         }
     </script>
 </body>
